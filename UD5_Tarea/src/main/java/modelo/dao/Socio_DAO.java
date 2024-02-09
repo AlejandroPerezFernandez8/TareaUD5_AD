@@ -5,12 +5,14 @@
 package modelo.dao;
 
 import com.mongodb.client.MongoCollection;
+import com.mongodb.client.model.Accumulators;
 import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.Filters;
 import controlador.factory.Conexion;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import javax.swing.JTextArea;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 
@@ -39,9 +41,7 @@ public class Socio_DAO {
                         .append("dni",dni)
                         .append("fecha_alta", fecha_alta)
                         .append("cuota", cuota)
-                        )
-                .append("actividades", new Document()
-                );
+                        );
                 
         Conexion.getBD().getCollection("Gimnasio").insertOne(nuevo_socio);
     }
@@ -63,8 +63,39 @@ public class Socio_DAO {
         for (Document document : socio) {
             System.out.println(document.toJson());
         }
+    }
+
+    public void modificarSocio(Document socio_modificado, Document socio) {
+        Conexion.getBD().getCollection("Gimnasio").updateOne(socio, new Document("$set",socio_modificado));
+    }
+
+    public Document getActividades(int id_socio) {
+        MongoCollection<?> coleccion = Conexion.getBD().getCollection("Gimnasio");
+        Bson filtro = Filters.eq("_id",id_socio);
+        
+        Document socio = (Document) coleccion.aggregate(Arrays.asList(
+                 Aggregates.match(filtro)
+              
+        )).first();
+        
+        return socio;
+    }
+
+    public void consulta4(JTextArea txtArea_consulta4) {
         
         
+    }
+
+    
+    public void getTotalCuotas() {
+        MongoCollection<?> coleccion = Conexion.getBD().getCollection("Gimnasio");
+        Document totalCuotas = (Document) coleccion.aggregate(Arrays.asList(
+                Aggregates.group( "_id",Accumulators.sum("SumaCuotas", "$socio.cuota")),
+                Aggregates.project(Document.parse("{_id:0,SumaCuotas:1}"))
+        )).first();
+        
+        
+            System.out.println(totalCuotas.toJson());
     }
     
     
