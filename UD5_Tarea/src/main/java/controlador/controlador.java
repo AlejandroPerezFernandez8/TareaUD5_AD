@@ -163,9 +163,8 @@ public class controlador {
             // desglosado en lo que paga cada socio
             //2€ cada actividad de tipo2
             //4# cada actividad de tipo3
-            
-            //
-            socio_dao.getTotalCuotas();
+
+            socio_dao.consulta4(ventana.getTxtArea_consulta4());
         } catch (Exception e) {
         }
     }

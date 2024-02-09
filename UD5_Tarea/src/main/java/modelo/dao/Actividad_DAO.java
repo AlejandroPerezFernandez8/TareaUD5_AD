@@ -106,9 +106,6 @@ public class Actividad_DAO {
 //        );
     }
 
-    
-    
-    
     public void getActividadMonitor(String nombreMonitor, JTextArea txtAreaConsultaMonitor) {
         txtAreaConsultaMonitor.setText("");
         MongoCollection<?> coleccion = Conexion.getBD().getCollection("Gimnasio");

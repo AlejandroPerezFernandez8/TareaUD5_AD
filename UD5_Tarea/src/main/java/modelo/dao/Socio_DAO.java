@@ -68,35 +68,36 @@ public class Socio_DAO {
     public void modificarSocio(Document socio_modificado, Document socio) {
         Conexion.getBD().getCollection("Gimnasio").updateOne(socio, new Document("$set",socio_modificado));
     }
-
     public Document getActividades(int id_socio) {
         MongoCollection<?> coleccion = Conexion.getBD().getCollection("Gimnasio");
         Bson filtro = Filters.eq("_id",id_socio);
         
         Document socio = (Document) coleccion.aggregate(Arrays.asList(
                  Aggregates.match(filtro)
-              
         )).first();
-        
         return socio;
     }
 
+    
     public void consulta4(JTextArea txtArea_consulta4) {
-        
-        
+        //DEBEMOS SACAR CUANTO PAGA POR TIPO2 Y TIPO3
+        //LUEGO LO MULTIPLICAMOS Y LO SUMAMOS TODO
+         MongoCollection<?> coleccion = Conexion.getBD().getCollection("Gimnasio");    
+                 
+         List<Document> pagos = (List<Document>) coleccion.aggregate(Arrays.asList(
+               Aggregates.unwind("$actividades"),
+               Aggregates.group("actividades.nombre",
+            Accumulators.sum("tipo2", Filters.eq("$actividades.tipo", 2)),
+            Accumulators.sum("tipo3", Filters.eq("$actividades.tipo", 3))
+                         ) 
+         )).into(new ArrayList<>());
+         
+         for (Document pago : pagos) {
+             pago.toJson();
+        }
     }
 
-    
-    public void getTotalCuotas() {
-        MongoCollection<?> coleccion = Conexion.getBD().getCollection("Gimnasio");
-        Document totalCuotas = (Document) coleccion.aggregate(Arrays.asList(
-                Aggregates.group( "_id",Accumulators.sum("SumaCuotas", "$socio.cuota")),
-                Aggregates.project(Document.parse("{_id:0,SumaCuotas:1}"))
-        )).first();
-        
-        
-            System.out.println(totalCuotas.toJson());
-    }
+
     
     
     
