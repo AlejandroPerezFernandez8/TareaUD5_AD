@@ -7,6 +7,7 @@ package controlador;
 
 import controlador.factory.Conexion;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import javax.swing.JOptionPane;
 import javax.swing.JTextArea;
 import modelo.dao.Actividad_DAO;
@@ -107,7 +108,7 @@ public class controlador {
     public static void insertarActividad() {
         try {
             String nombre  = ventana.getTxtNombre_actividad().getText();
-            int tipo       = Integer.parseInt(ventana.getTxtTipo_actividad().getText());
+            String tipo    = ventana.getTxtTipo_actividad().getText();
             String fecha   = ventana.getTxtFecha_actividad().getText();
             int duracion   = Integer.parseInt(ventana.getTxtDuracion_actividad().getText());
             String monitor = ventana.getTxtMonitor_actividad().getText();
@@ -159,12 +160,34 @@ public class controlador {
     }
     public static void consulta4() {
         try {
+            ventana.getTxt_id_socio().setText("");
             //- Debes obtener un informe de lo que cobra el gimnasio en un mes en concreto en total,
             // desglosado en lo que paga cada socio
             //2€ cada actividad de tipo2
             //4# cada actividad de tipo3
 
-            socio_dao.consulta4(ventana.getTxtArea_consulta4());
+            //Primero obtenemos la suma de todas las cuotas y de cada tipo de actividad
+            double totalCuotas = socio_dao.getTotalCuotas();
+            int totalActividadesTipo2 = socio_dao.getTotalActividadesT2();
+            int totalActividadesTipo3 = socio_dao.getTotalActividadesT3();
+            
+            Double totalingresos = totalCuotas + (totalActividadesTipo2 *2) + (totalActividadesTipo3*4);
+            ventana.getTxtArea_consulta4().setText("Total de ingresos en el gimnasio: \n" + totalingresos+"\n");
+            
+            //AHORA POR EMPLEADO
+            ArrayList<Document> cuotasPorSocio= socio_dao.getCuotasporSocio();
+            ArrayList<Document> actividadesPorSocio= socio_dao.getActividadesporSocio();
+            
+            for (int i = 0; i < cuotasPorSocio.size(); i++) {
+                Document cuotaYsocio = cuotasPorSocio.get(i);
+                Document actividadPorSocio = actividadesPorSocio.get(i);
+                ventana.getTxtArea_consulta4().append("------------------------------------\n");
+                ventana.getTxtArea_consulta4().append("ID de socio: "+cuotaYsocio.get("_id").toString() + "\n");
+                ventana.getTxtArea_consulta4().append("Cuota Fija: "+cuotaYsocio.get("cuota").toString() + "€\n");
+                ventana.getTxtArea_consulta4().append("Gastos en actividades tipo 2: "+ (actividadPorSocio.getInteger("tipo2")*2 )+ "€\n");
+                ventana.getTxtArea_consulta4().append("Gastos en actividades tipo 3: "+ (actividadPorSocio.getInteger("tipo3")*4 )+ "€\n");
+            }
+            
         } catch (Exception e) {
         }
     }

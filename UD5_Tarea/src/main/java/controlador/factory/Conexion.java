@@ -16,8 +16,8 @@ public class Conexion {
     private static MongoClient Cliente;
     private static MongoDatabase BD;
     private static CodecRegistry pojoCodecRegistry;
-    private static final String nameBD = "Tarea";//*******Indica la BD **************
-    private static final String IP = "192.168.56.117";//*******Indica la IP ***************
+    private static final String nameBD = "Gimnasio";//*******Indica la BD **************
+    private static final String IP = "127.0.0.1";//*******Indica la IP ***************
     private static final int PORT = 27017;
 
     public static void Cerrar() {

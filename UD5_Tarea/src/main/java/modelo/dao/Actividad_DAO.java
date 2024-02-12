@@ -113,7 +113,11 @@ public class Actividad_DAO {
         
         List<Document> actividadesMonitor =  (List<Document>) coleccion.aggregate(Arrays.asList(
                 Aggregates.unwind("$actividades"),
-                Aggregates.match(filtro)
+                Aggregates.match(filtro),
+                Aggregates.group("actividades.nombre",
+                        Accumulators.addToSet("actividadesImpartidas", "$actividades.nombre")
+                        ),
+                Aggregates.project(Document.parse("{actividadesImpartidas:1}")) 
         )).into(new ArrayList<>());
         
         if (actividadesMonitor.isEmpty()){
@@ -122,8 +126,7 @@ public class Actividad_DAO {
         
         txtAreaConsultaMonitor.append("Actividades que imparte " + nombreMonitor + ":\n");
         for (Document document : actividadesMonitor) {
-            Document actividad = (Document) document.get("actividades");
-            txtAreaConsultaMonitor.append(actividad.get("nombre").toString()+"\n");
+            txtAreaConsultaMonitor.append(document.get("actividadesImpartidas").toString()+"\n");
         }
         
     }
