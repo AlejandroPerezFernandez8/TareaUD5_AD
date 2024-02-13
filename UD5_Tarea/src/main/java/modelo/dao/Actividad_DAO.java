@@ -72,38 +72,45 @@ public class Actividad_DAO {
     }
 
     public void getExitoActividades(JTextArea txtArea) {
+        String NombreActividadMasExitosa;
+        String NombreActividadMenosExitosa;
         txtArea.setText("");
+        
+        
+        //CONSULTA DE LA ACTIVIDAD MAS EXITOSA
         MongoCollection<?> coleccion = Conexion.getBD().getCollection("Gimnasio");
         
-        Document ActividadMasExitosa = (Document) coleccion.aggregate(Arrays.asList(
+        Document actividadMasExitosa = (Document) coleccion.aggregate(Arrays.asList(
                 Aggregates.unwind("$actividades"),
                 Aggregates.group("$actividades.nombre",
-            Accumulators.sum("count", 1)
+                        Accumulators.sum("total", 1)
                         ),
-                  Aggregates.project( Document.parse("{count:1}"))
+                Aggregates.sort(Sorts.descending("total")),
+                Aggregates.limit(1),
+                Aggregates.project(Document.parse("{_id:1}"))
         )).first();
         
-        Document ActividadMenos = (Document) coleccion.aggregate(Arrays.asList(
+        NombreActividadMasExitosa = actividadMasExitosa.getString("_id");
+        
+        
+        //CONSULTA DE LA ACTIVIDAD MENOS EXITOSA
+        Document actividadMenosExitosa = (Document) coleccion.aggregate(Arrays.asList(
                 Aggregates.unwind("$actividades"),
-                Aggregates.group("$actividades.nombre",
-            Accumulators.min("count", 1)
-                        ),
-                  Aggregates.sort(Sorts.ascending("count")),
-                  Aggregates.limit(1),
-                  Aggregates.project( Document.parse("{count:1}"))
+                Aggregates.group("$actividades.nombre", 
+                        Accumulators.sum("total", 1)
+                ),
+                Aggregates.sort(Sorts.ascending("total")),
+                Aggregates.limit(1),
+                Aggregates.project(Document.parse("{_id: 1}"))
         )).first();
+
+        NombreActividadMenosExitosa = actividadMenosExitosa.getString("_id");
+
+        txtArea.setText("Actividad con mas exito del gimnasio:  " + NombreActividadMasExitosa+"\n");
+        txtArea.append("Actividad con menos exitos del gimasion  " + NombreActividadMenosExitosa);
         
         
         
-        
-        System.out.println(ActividadMasExitosa.toJson());
-        System.out.println(ActividadMenos.toJson());
-        
-//        txtArea.setText("Actividad mas exitosa: \n" 
-//                + ExitoActividades.get("ActividadMasExitosa")+
-//                "\n Actividad menos exitosa: \n"
-//                + ExitoActividades.get("ActividadMenosExitosa")
-//        );
     }
 
     public void getActividadMonitor(String nombreMonitor, JTextArea txtAreaConsultaMonitor) {
@@ -122,6 +129,7 @@ public class Actividad_DAO {
         
         if (actividadesMonitor.isEmpty()){
             txtAreaConsultaMonitor.setText("El monitor no existe o no imparte clases");
+            return;
         }
         
         txtAreaConsultaMonitor.append("Actividades que imparte " + nombreMonitor + ":\n");

@@ -168,9 +168,6 @@ public class Socio_DAO {
                         )
                 )
         )).into(new ArrayList<>());
-
-        
-     
         return (ArrayList<Document>) cuotasEmpleados;
     }
 

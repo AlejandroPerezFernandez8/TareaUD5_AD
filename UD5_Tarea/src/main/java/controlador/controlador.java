@@ -205,6 +205,9 @@ public class controlador {
             JOptionPane.showMessageDialog(ventana,"Excepcion inesperada");
         }
     }
+    
+    
+    
     public static void buscarActividadesPorMonitor() {
         try {
             String nombreMonitor = ventana.getTxtNombreMonitorConsulta().getText();
@@ -216,6 +219,44 @@ public class controlador {
         } catch (Exception e) {
             JOptionPane.showMessageDialog(ventana,"Error inesperado");
         } 
+    }
+
+    public static void subirDatos() {
+        double totalCuotas = socio_dao.getTotalCuotas();
+        int totalActividadesTipo2 = socio_dao.getTotalActividadesT2();
+        int totalActividadesTipo3 = socio_dao.getTotalActividadesT3();
+        Double totalingresos = totalCuotas + (totalActividadesTipo2 *2) + (totalActividadesTipo3*4);
+        
+        ArrayList<Document> cuotasPorSocio= socio_dao.getCuotasporSocio();
+        ArrayList<Document> actividadesPorSocio= socio_dao.getActividadesporSocio();
+        
+        try {
+            Conexion.getBD().createCollection("Calculos");
+            ArrayList<Document> socios = new ArrayList<>(); 
+            Document calculos = new Document().append("TotalCuotas", totalCuotas);
+            
+            for (int i = 0; i < cuotasPorSocio.size(); i++) {
+                
+                Document cuotaYsocio = cuotasPorSocio.get(i);
+                Document actividadPorSocio = actividadesPorSocio.get(i);
+                
+                System.out.println(cuotaYsocio.toJson());
+                
+                Document socio = new Document()
+                        .append("ID_socio", cuotaYsocio.get("_id").toString())
+                        .append("Cuota_Fija",cuotaYsocio.get("cuota").toString() )
+                        .append("Actividades_2", (actividadPorSocio.getInteger("tipo2")*2 ))
+                        .append("Actividades_3", (actividadPorSocio.getInteger("tipo3")*4 ));
+                
+                       socios.add(socio);
+            }
+            
+            calculos.append("Socios", socios);
+            
+            Conexion.getBD().getCollection("Calculos").insertOne(calculos);
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(ventana,"Error inesperado");
+        }        
     }
     
 }
