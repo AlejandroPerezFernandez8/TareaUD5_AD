@@ -258,5 +258,18 @@ public class controlador {
             JOptionPane.showMessageDialog(ventana,"Error inesperado");
         }        
     }
+
+    public static void TiempoMedioUso() {
+        try {
+            int mes = Integer.parseInt(ventana.getTxtMesConsulta8().getText());
+            actividad_dao.getTiempoMedioUso(mes,ventana.getTxtAreaTiempoMedio());
+            
+            
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(ventana, "Error inesperado");
+        }
+        
+        
+    }
     
 }

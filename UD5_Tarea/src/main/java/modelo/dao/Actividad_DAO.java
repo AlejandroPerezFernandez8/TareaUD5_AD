@@ -14,6 +14,7 @@ import controlador.factory.Conexion;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import javax.swing.JOptionPane;
 import javax.swing.JTextArea;
 import org.bson.Document;
 import org.bson.conversions.Bson;
@@ -136,6 +137,36 @@ public class Actividad_DAO {
         for (Document document : actividadesMonitor) {
             txtAreaConsultaMonitor.append(document.get("actividadesImpartidas").toString()+"\n");
         }
+        
+    }
+
+    public void getTiempoMedioUso(int mes,JTextArea txtArea) {
+        txtArea.setText("");
+        String numeroMes = "";
+        if (mes < 10){
+            numeroMes = "0"+mes;
+        }else{
+            numeroMes = mes+"";
+        }
+        
+        MongoCollection<?> collection = Conexion.getBD().getCollection("Gimnasio");
+        
+        Document TiempoMedio = (Document) collection.aggregate(Arrays.asList(
+                Aggregates.unwind("$actividades"),
+                Aggregates.match(Filters.regex("actividades.fecha", "^\\d{4}-" + numeroMes + "-\\d{2}$")),
+                Aggregates.group("actividades.nombre",
+                        Accumulators.avg("TiempoMedio","$actividades.duracion")
+                        )
+                
+        )).first();
+        
+        if(TiempoMedio == null){
+            txtArea.setText("No hay actividades en esos meses");
+            return;
+        }
+        
+        txtArea.setText("Tiempo medio de uso: \n"+ TiempoMedio.get("TiempoMedio").toString());
+        
         
     }
 }
